@@ -46,7 +46,7 @@ __global__ void vector_dot_product(float *CUDA_A, float *CUDA_B, float *CUDA_C,f
   int row_no = array_size;
   int col_no = array_size;
   float *mul = (float *)malloc(sizeof(float) * array_size);
-  double *sum = (double *)malloc(sizeof(double) * 300);
+  double *sum = (double *)malloc(sizeof(double) * (array_size*array_size*array_size*array_size));
 
   //Make multiplications 
   for (int p = 0; p < array_size; p++){
@@ -70,7 +70,7 @@ __global__ void vector_dot_product(float *CUDA_A, float *CUDA_B, float *CUDA_C,f
     }
    }
 
-  for(int j = 0;j<300;j++){
+  for(int j = 0;j<(array_size*array_size*array_size);j++){
     //CUDA_C[(i*array_size) + j] = mul[(i*row_no)+j]; 
     //place all the results back to the array	  
     CUDA_T[j] = sum[j]; 
@@ -81,13 +81,13 @@ __global__ void vector_dot_product(float *CUDA_A, float *CUDA_B, float *CUDA_C,f
 }
 
 int main(){
-    int array_size = 3;
+    int array_size = 2;
     float *C, *A, *B, *T;
     float *CUDA_A, *CUDA_B,  *CUDA_C, *CUDA_T; 
     
     A = (float *)malloc(array_size * array_size * sizeof(float));
     B = (float *)malloc(array_size * array_size * sizeof(float));
-    T = (float *)malloc(300 * sizeof(float));
+    T = (float *)malloc((array_size*array_size*array_size) * sizeof(float));
   
     float a = 4.0;
 
@@ -97,7 +97,7 @@ int main(){
     } 
 
     //Fill remaining bytes in array with 1s
-    //for(int i = 0; i<300;i++){
+    //for(int i = 0; i<(array_size*array_size*array_size);i++){
     //  T[i] = 1;
    // }
 
@@ -107,7 +107,7 @@ int main(){
     cudaMalloc((void**)&CUDA_A, sizeof(float) * array_size * array_size);
     cudaMalloc((void**)&CUDA_B, sizeof(float) * array_size * array_size);
     cudaMalloc((void**)&CUDA_C, sizeof(float) * array_size * array_size);
-    cudaMalloc((void**)&CUDA_T, sizeof(float) * 300);
+    cudaMalloc((void**)&CUDA_T, sizeof(float) * (array_size*array_size*array_size));
 
     // Transfer data from host to device memory
     cudaMemcpy(CUDA_A, A, sizeof(float) * array_size * array_size, cudaMemcpyHostToDevice);
@@ -118,7 +118,7 @@ int main(){
     vector_dot_product<<<1,calculate_no_threads(array_size)>>>(CUDA_A, CUDA_B, CUDA_C, CUDA_T,array_size,calculate_no_threads(array_size));
 
     cudaMemcpy(C, CUDA_C, sizeof(float) * array_size * array_size, cudaMemcpyDeviceToHost);
-    cudaMemcpy(T, CUDA_T, sizeof(float) * 300, cudaMemcpyDeviceToHost);
+    cudaMemcpy(T, CUDA_T, sizeof(float) * (array_size*array_size*array_size), cudaMemcpyDeviceToHost);
 
     puts("DOT_PRODUCT");
     print_results(A,array_size);
