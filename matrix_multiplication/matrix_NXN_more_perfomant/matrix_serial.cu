@@ -6,11 +6,7 @@
 #include <cuda_runtime.h>
 
 int calculate_no_threads(int array_size){
- if(array_size<256){
-   return array_size;	 
- } else {
-   return 1024;
- }
+ return 1;  
 }
 
 void print_results(double *ARRAY, int array_size){
@@ -18,7 +14,7 @@ void print_results(double *ARRAY, int array_size){
   for(int i = 0; i < array_size; i++){
     printf("{");	  
     for(int j = 0; j < array_size; j++){
-      printf("%1.1lf,",ARRAY[(i * array_size) +j]); 
+      printf("%1.1f,",ARRAY[(i * array_size) +j]); 
     }	    
     printf("}\n");	  
   }
@@ -29,46 +25,25 @@ void print_results(double *ARRAY, int array_size){
 __global__ void vector_dot_product(double *CUDA_A, double *CUDA_B, double *CUDA_C,double *CUDA_T,int array_size,int no_threads) {
   int tid = threadIdx.x;
   int bid = blockIdx.x;
-  
-  int row_count = array_size;
-  int col_count = array_size;
-  int NumberThreads = no_threads;
-  int batch = array_size/NumberThreads;
-  int Remaninder = array_size%NumberThreads;
-  
-  int StartRow;
-  int EndRow; 
-  
-  StartRow = batch * tid; //For testing replace tid with 0..n batch
-
-  if (StartRow == 0){
-    EndRow = StartRow + batch + Remaninder;
-  } else {
-    StartRow = StartRow + Remaninder;
-    EndRow = StartRow + batch;
-  }
-
-  int StarTingPoint =  array_size*StartRow;
-
-  int increment = 0;
-  float product = 0;
-
-  for (int row = StartRow; row < EndRow; row++){
-    for(int column = 0; column < array_size; column++){
-      for (int cell = 0; cell < array_size; cell++){	  
-	product = product + CUDA_A[row * col_count + cell] * CUDA_B[ cell * row_count + column];
+  int row_no = array_size;
+  int col_no = array_size;
+  double todo = 0;
+  int chin=0;
+  for (int row = 0; row < array_size; row++){
+    for(int i = 0; i < array_size; i++){
+      for (int j = 0; j < array_size; j++){	  
+	todo = todo + CUDA_A[row * col_no + j] * CUDA_B[ j * row_no + i];
       }	    
 
-      CUDA_T[(StarTingPoint)+increment++] = product;
-      product = 0;
+      CUDA_T[chin++]=todo;
+      todo = 0;
     }
   }
-   __syncthreads();
 }
 
 int main(){
     //int array_size = 7900;
-    int array_size = 3000;
+    int array_size =3000;
     double *C, *A, *B, *T;
     double *CUDA_A, *CUDA_B,  *CUDA_C, *CUDA_T; 
     
@@ -108,8 +83,6 @@ int main(){
     puts("MATRIX MULTI");
     print_results(T,array_size);
 
-
-    // Deallocate device memory
     cudaFree(CUDA_A);
     cudaFree(CUDA_B);
     cudaFree(CUDA_C);
@@ -119,6 +92,5 @@ int main(){
     free(A);
     free(B);
     free(T);
-    // Deallocate host memory
 }
 
