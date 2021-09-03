@@ -38,7 +38,7 @@ void vector_dot_product(double *CUDA_A, double *CUDA_B, double *CUDA_C,double *C
 }
 
 int main(){
-    int array_size =3000;
+    int array_size =3;
     double *C, *A, *B, *T;
     double *CUDA_A, *CUDA_B,  *CUDA_C, *CUDA_T; 
     
